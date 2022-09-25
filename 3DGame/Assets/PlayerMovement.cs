@@ -23,7 +23,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         if (transform.position.y < -15f) {
-            transform.position = new Vector3(0f, 0.55f, 0f);
+            transform.position = new Vector3(0f, 0.55f, -1.7f);
         }
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -54,4 +54,17 @@ public class PlayerMovement : MonoBehaviour
             
         }
     }
+   void OnCollisionEnter(Collision other) {
+    if (other.gameObject.tag.Equals ("MovingPlatform") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
+	{
+		this.transform.parent = other.transform;
+	}
+   }
+   void OnCollisionExit(Collision other)
+   {
+	    if (other.gameObject.tag.Equals ("MovingPlatform"))
+	    {
+		    this.transform.parent = null;
+	    }
+   }
 }
