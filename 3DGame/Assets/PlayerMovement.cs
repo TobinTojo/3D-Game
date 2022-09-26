@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     [SerializeField] AudioSource source;
     [SerializeField] AudioClip jump;
+    
     public bool isJump;
     // Start is called before the first frame update
     void Start()
@@ -39,11 +40,9 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
 
         if (Input.GetButtonDown("Jump") && Physics.CheckSphere(groundCheck.position, .1f, ground) == true) {
-            source.clip = jump;
-            source.Play();
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
-            anim.SetBool("isJumping", true);
-            isJump = true;
+           Jumping();
+           source.clip = jump;
+           source.Play();
         }
         if (Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true) {
             anim.SetBool("isJumping", false);
@@ -54,11 +53,21 @@ public class PlayerMovement : MonoBehaviour
             
         }
     }
+   void Jumping() {
+        rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+        anim.SetBool("isJumping", true);
+        isJump = true;
+   }
    void OnCollisionEnter(Collision other) {
     if (other.gameObject.tag.Equals ("MovingPlatform") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
 	{
 		this.transform.parent = other.transform;
 	}
+
+    if (other.gameObject.tag.Equals ("EnemyHead") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
+        Destroy(other.transform.parent.gameObject);
+        Jumping();
+    }
    }
    void OnCollisionExit(Collision other)
    {
