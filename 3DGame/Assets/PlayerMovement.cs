@@ -11,8 +11,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Animator anim;
     Rigidbody rb;
     [SerializeField] AudioSource source;
+    [SerializeField] AudioSource enemsource;
     [SerializeField] AudioClip jump;
-    
+    [SerializeField] AudioClip bounce;
     public bool isJump;
     // Start is called before the first frame update
     void Start()
@@ -63,11 +64,15 @@ public class PlayerMovement : MonoBehaviour
 	{
 		this.transform.parent = other.transform;
 	}
+   }
 
-    if (other.gameObject.tag.Equals ("EnemyHead") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
-        Destroy(other.transform.parent.gameObject);
-        Jumping();
-    }
+   void OnTriggerEnter(Collider other) {
+        if (other.gameObject.tag.Equals ("EnemyHead") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
+            enemsource.clip = bounce;
+            enemsource.Play();
+            Destroy(other.transform.parent.gameObject);
+            Jumping();
+        }
    }
    void OnCollisionExit(Collision other)
    {

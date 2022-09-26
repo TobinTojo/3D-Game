@@ -17,7 +17,7 @@ public class HealthManager : MonoBehaviour
         
     }
 
-    void OnCollisionEnter(Collision other) {
+    void OnTriggerEnter(Collider other) {
      if (other.gameObject.tag.Equals ("Enemy")) {
         Sonic.SetActive(false);
         GetComponent<PlayerMovement>().enabled = false;
