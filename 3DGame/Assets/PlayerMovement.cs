@@ -14,7 +14,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AudioSource enemsource;
     [SerializeField] AudioClip jump;
     [SerializeField] AudioClip bounce;
-    
 
     public bool isJump;
     // Start is called before the first frame update
