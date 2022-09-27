@@ -14,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AudioSource enemsource;
     [SerializeField] AudioClip jump;
     [SerializeField] AudioClip bounce;
+    
+
     public bool isJump;
     // Start is called before the first frame update
     void Start()
@@ -53,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
             anim.SetBool("isJumping", true);
             
         }
+        
     }
    void Jumping() {
         rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
