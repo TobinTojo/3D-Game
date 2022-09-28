@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {   [SerializeField] float movementSpeed = 6f;
     [SerializeField] float jumpForce = 5f;
-
+    [SerializeField] float springForce = 8f;
     [SerializeField] Transform groundCheck;
     [SerializeField] LayerMask ground;
     [SerializeField] Animator anim;
@@ -61,6 +61,11 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("isJumping", true);
         isJump = true;
    }
+   void springJumping() {
+        rb.velocity = new Vector3(rb.velocity.x, springForce, rb.velocity.z);
+        anim.SetBool("isJumping", true);
+        isJump = true;
+   }
    void OnCollisionEnter(Collision other) {
     if (other.gameObject.tag.Equals ("MovingPlatform") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
 	{
@@ -74,6 +79,10 @@ public class PlayerMovement : MonoBehaviour
             enemsource.Play();
             Destroy(other.transform.parent.gameObject);
             Jumping();
+        }
+        if (other.gameObject.tag.Equals("Spring") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
+        {
+            springJumping();
         }
    }
    void OnCollisionExit(Collision other)

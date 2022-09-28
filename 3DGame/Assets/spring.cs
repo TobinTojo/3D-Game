@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class coin : MonoBehaviour
+public class spring : MonoBehaviour
 {
-    [SerializeField] AudioClip ring;
-    [SerializeField] AudioSource source;
+    public AudioClip springJump;
+    public AudioSource source;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,15 +17,11 @@ public class coin : MonoBehaviour
     {
         
     }
-    void destroyObject() {
-        Destroy(this.gameObject);
-    }
+
     void OnTriggerEnter(Collider other) {
         if (other.gameObject.name == "Player") {
-            GetComponent<MeshRenderer>().enabled = false;
-            source.clip = ring;
+            source.clip = springJump;
             source.Play();
-            Invoke("destroyObject", 0.8f);
         }
     }
 }

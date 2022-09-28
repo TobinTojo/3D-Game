@@ -58,7 +58,7 @@ public class WayPointFollower : MonoBehaviour
                 body.localScale = new Vector3(-1f, 2f, -1f);
             }
             Vector3 place = new Vector3(player.position.x, transform.position.y, player.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, place,  1.25f * speed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, place,  1.3f * speed * Time.deltaTime);
         }
         else {
             isPatrol = true; 
