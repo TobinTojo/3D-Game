@@ -23,6 +23,7 @@ public class coin : MonoBehaviour
     void OnTriggerEnter(Collider other) {
         if (other.gameObject.name == "Player") {
             GetComponent<MeshRenderer>().enabled = false;
+            GetComponent<BoxCollider>().enabled = false;
             source.clip = ring;
             source.Play();
             Invoke("destroyObject", 0.8f);

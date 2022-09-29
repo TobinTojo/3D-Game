@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {   [SerializeField] float movementSpeed = 6f;
     [SerializeField] float jumpForce = 5f;
@@ -14,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AudioSource enemsource;
     [SerializeField] AudioClip jump;
     [SerializeField] AudioClip bounce;
+    public static int coins;
+    [SerializeField] Text coinCount;
 
     public bool isJump;
     // Start is called before the first frame update
@@ -25,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        coinCount.text = coins.ToString();
         if (transform.position.y < -15f) {
             transform.position = new Vector3(0f, 0.55f, -1.7f);
         }
@@ -83,6 +86,9 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag.Equals("Spring") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
         {
             springJumping();
+        }
+        if (other.gameObject.tag.Equals("coin")) {
+            coins++;
         }
    }
    void OnCollisionExit(Collision other)
