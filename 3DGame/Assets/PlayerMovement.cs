@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 public class PlayerMovement : MonoBehaviour
 {   [SerializeField] float movementSpeed = 6f;
     [SerializeField] float jumpForce = 5f;
@@ -15,8 +16,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] AudioClip jump;
     [SerializeField] AudioClip bounce;
     public static int coins;
+    private bool isDash;
     [SerializeField] Text coinCount;
-
+    [SerializeField] Transform wayPoint;
+    [SerializeField] Text rightTime;
     public bool isJump;
     // Start is called before the first frame update
     void Start()
@@ -27,6 +30,15 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        TimeSpan time = TimeSpan.FromSeconds(timer.currentTime);
+        rightTime.text = time.ToString(@"mm\:ss");
+        if (isDash) {
+              transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
+        }
+        if (Vector3.Distance(transform.position, wayPoint.transform.position) < 0.1f)
+        {
+            isDash = false;
+        }    
         coinCount.text = coins.ToString();
         if (transform.position.y < -15f) {
             transform.position = new Vector3(0f, 0.55f, -1.7f);
@@ -41,6 +53,9 @@ public class PlayerMovement : MonoBehaviour
         }
         else {
             anim.SetBool("isRunning", false);
+            movementSpeed = 4f;
+            if (!isDash)
+                GetComponent<TrailRenderer>().enabled = false;
         }
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
 
@@ -87,9 +102,18 @@ public class PlayerMovement : MonoBehaviour
         {
             springJumping();
         }
+        if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
+        {
+            GetComponent<TrailRenderer>().enabled = true;
+            isDash = true;
+            Invoke("LowerSpeed", 0.1f);
+        }
         if (other.gameObject.tag.Equals("coin")) {
             coins++;
         }
+   }
+   void LowerSpeed() {
+        movementSpeed = 6f;
    }
    void OnCollisionExit(Collision other)
    {
