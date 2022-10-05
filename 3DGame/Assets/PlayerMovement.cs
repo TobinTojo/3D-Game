@@ -54,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
         else {
             anim.SetBool("isRunning", false);
             movementSpeed = 4f;
+            anim.SetBool("isBoosting", false);
             if (!isDash)
                 GetComponent<TrailRenderer>().enabled = false;
         }
@@ -105,7 +106,9 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
         {
             GetComponent<TrailRenderer>().enabled = true;
+            other.gameObject.GetComponent<AudioSource>().Play();
             isDash = true;
+            anim.SetBool("isBoosting", true);
             Invoke("LowerSpeed", 0.1f);
         }
         if (other.gameObject.tag.Equals("coin")) {
