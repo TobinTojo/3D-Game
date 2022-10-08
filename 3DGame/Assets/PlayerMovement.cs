@@ -25,6 +25,10 @@ public class PlayerMovement : MonoBehaviour
     private float? lastGroundedTime;
     private float? jumpButtonPressedTime;
     public bool isJump = true;
+    Vector3 movement;
+    public static bool isRailGrinding = false;
+    float horizontalInput;
+    float verticalInput;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,7 +44,6 @@ public class PlayerMovement : MonoBehaviour
         {
             SceneManager.LoadScene("SampleScene");
         }
-
         if (isDash) {
               transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
         }
@@ -52,12 +55,25 @@ public class PlayerMovement : MonoBehaviour
         if (transform.position.y < -15f) {
             transform.position = new Vector3(0f, 0.55f, -1.7f);
         }
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-        Vector3 movement = new Vector3(horizontalInput, 0, verticalInput).normalized;
+        if (!isRailGrinding)
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
+            verticalInput = Input.GetAxis("Vertical");
+            movement = new Vector3(horizontalInput, 0, verticalInput).normalized;
+        }
+        else 
+        {
+             movement = new Vector3(0f, 0, 0f).normalized;
+        }
+        
+        if (isRailGrinding)
+            rb.AddForce(Vector3.forward * 60);
         if (movement != Vector3.zero) {
             Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.deltaTime);
+            if (!isRailGrinding)
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.deltaTime);
+            else
+                transform.eulerAngles = new Vector3(0f, 0f, 0f);
             anim.SetBool("isRunning", true);
         }
         else {
@@ -111,6 +127,11 @@ public class PlayerMovement : MonoBehaviour
 	{
 		this.transform.parent = other.transform;
 	}
+    if (other.gameObject.tag.Equals("rail") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
+    {
+        isRailGrinding = true;
+        anim.SetBool("isRail", true);
+    }
    }
 
    void OnTriggerEnter(Collider other) {
@@ -146,5 +167,10 @@ public class PlayerMovement : MonoBehaviour
 	    {
 		    this.transform.parent = null;
 	    }
+        if (other.gameObject.tag.Equals("rail"))
+        {
+            isRailGrinding = false;
+            anim.SetBool("isRail", false);
+        }
    }
 }

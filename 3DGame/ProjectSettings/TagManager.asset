@@ -12,6 +12,7 @@ TagManager:
   - Spring
   - starRing
   - speedPanel
+  - rail
   layers:
   - Default
   - TransparentFX
