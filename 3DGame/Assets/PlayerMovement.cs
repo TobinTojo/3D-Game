@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {   [SerializeField] float movementSpeed = 6f;
     [SerializeField] float jumpForce = 5f;
@@ -20,7 +21,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Text coinCount;
     [SerializeField] Transform wayPoint;
     [SerializeField] Text rightTime;
-    public bool isJump;
+    public float jumpButtonGracePeriod;
+    private float? lastGroundedTime;
+    private float? jumpButtonPressedTime;
+    public bool isJump = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,6 +36,11 @@ public class PlayerMovement : MonoBehaviour
     {
         TimeSpan time = TimeSpan.FromSeconds(timer.currentTime);
         rightTime.text = time.ToString(@"mm\:ss");
+        if (Input.GetKey("escape"))
+        {
+            SceneManager.LoadScene("SampleScene");
+        }
+
         if (isDash) {
               transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
         }
@@ -59,15 +68,27 @@ public class PlayerMovement : MonoBehaviour
                 GetComponent<TrailRenderer>().enabled = false;
         }
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
-
-        if (Input.GetButtonDown("Jump") && Physics.CheckSphere(groundCheck.position, .1f, ground) == true) {
-           Jumping();
-           source.clip = jump;
-           source.Play();
+        if (Input.GetButtonDown("Jump"))
+        {
+            jumpButtonPressedTime = Time.time;
+        }
+        if (Time.time - lastGroundedTime <= jumpButtonGracePeriod) {
+            if (Time.time - jumpButtonPressedTime <= jumpButtonGracePeriod && !isJump)
+            {
+                Jumping();
+                source.clip = jump;
+                source.Play();
+                jumpButtonPressedTime = null;
+                lastGroundedTime = null;
+            }
+        }
+        if (rb.velocity.y < -0.1 && isJump)
+        {
+            isJump = false;
         }
         if (Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true) {
             anim.SetBool("isJumping", false);
-            isJump = false;
+            lastGroundedTime = Time.time;
         }
         else {
             anim.SetBool("isJumping", true);
@@ -96,6 +117,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag.Equals ("EnemyHead") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
             enemsource.clip = bounce;
             enemsource.Play();
+            Destroy(other.gameObject);
             Destroy(other.transform.parent.gameObject);
             Jumping();
         }
