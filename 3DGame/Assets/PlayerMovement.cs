@@ -29,6 +29,9 @@ public class PlayerMovement : MonoBehaviour
     public static bool isRailGrinding = false;
     float horizontalInput;
     float verticalInput;
+    public int rail = 0;
+    public static bool rail1 = false;
+    public static bool rail2 = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -130,6 +133,12 @@ public class PlayerMovement : MonoBehaviour
     if (other.gameObject.tag.Equals("rail") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
     {
         isRailGrinding = true;
+        char rails = other.gameObject.name[other.gameObject.name.Length - 1];
+        rail = Convert.ToInt32(rails);
+        if (rail == 49)
+            rail1 = true;
+        else if (rail == 50)
+            rail2 = true;
         anim.SetBool("isRail", true);
     }
    }
@@ -145,6 +154,12 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag.Equals("Spring") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
         {
             springJumping();
+        }
+        if (other.gameObject.tag.Equals ("FlyEnemy") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
+            enemsource.clip = bounce;
+            enemsource.Play();
+            Destroy(other.gameObject);
+            Jumping();
         }
         if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
         {
@@ -169,8 +184,17 @@ public class PlayerMovement : MonoBehaviour
 	    }
         if (other.gameObject.tag.Equals("rail"))
         {
-            isRailGrinding = false;
-            anim.SetBool("isRail", false);
+            if (rail == 49)
+                rail1 = false;
+            else if (rail == 50)
+                rail2 = false;
+            if (rail1 == false && rail2 == false)
+            {
+                isRailGrinding = false;
+                anim.SetBool("isRail", false);
+                rail = 0;
+            }
+                
         }
    }
 }

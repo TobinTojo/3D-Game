@@ -13,6 +13,7 @@ TagManager:
   - starRing
   - speedPanel
   - rail
+  - FlyEnemy
   layers:
   - Default
   - TransparentFX
