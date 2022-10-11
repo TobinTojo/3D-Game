@@ -7,6 +7,7 @@ public class crabEnemy : MonoBehaviour
     [SerializeField] GameObject[]  wayPoints;
     [SerializeField] int currentWayPointIndex = 0;
     [SerializeField] float speed = 1f;
+    [SerializeField] string enemyType;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,12 +24,14 @@ public class crabEnemy : MonoBehaviour
                 currentWayPointIndex = 0;
             if (currentWayPointIndex == 1) {
                 if (this.gameObject.layer == 10) {
-                    transform.localScale = new Vector3(1f, 0.5f, 1f);
+                    if (enemyType == "Front-Back")
+                        transform.localScale = new Vector3(1f, 0.5f, 1f);
                 }
             }
             else {
                 if (this.gameObject.layer == 10) {
-                    transform.localScale = new Vector3(-1f, 0.5f, -1f);
+                    if (enemyType == "Front-Back")
+                        transform.localScale = new Vector3(-1f, 0.5f, -1f);
                 }
             }
         }    

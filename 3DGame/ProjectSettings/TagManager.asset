@@ -14,6 +14,7 @@ TagManager:
   - speedPanel
   - rail
   - FlyEnemy
+  - Item
   layers:
   - Default
   - TransparentFX

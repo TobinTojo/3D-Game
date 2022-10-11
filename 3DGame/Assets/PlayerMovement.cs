@@ -32,6 +32,7 @@ public class PlayerMovement : MonoBehaviour
     public int rail = 0;
     public static bool rail1 = false;
     public static bool rail2 = false;
+    [SerializeField] GameObject shield;
     // Start is called before the first frame update
     void Start()
     {
@@ -49,6 +50,11 @@ public class PlayerMovement : MonoBehaviour
         }
         if (isDash) {
               transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
+        }
+        else
+        {
+             if (movementSpeed == 4f)
+                GetComponent<TrailRenderer>().enabled = false;
         }
         if (Vector3.Distance(transform.position, wayPoint.transform.position) < 0.1f)
         {
@@ -151,6 +157,15 @@ public class PlayerMovement : MonoBehaviour
             Destroy(other.transform.parent.gameObject);
             Jumping();
         }
+        if (other.gameObject.tag.Equals ("Item") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
+            enemsource.clip = bounce;
+            enemsource.Play();
+            Destroy(other.gameObject);
+            shield.SetActive(true);
+            HealthManager.health = 2;
+            Destroy(other.transform.parent.gameObject);
+            Jumping();
+        }
         if (other.gameObject.tag.Equals("Spring") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
         {
             springJumping();
@@ -166,6 +181,7 @@ public class PlayerMovement : MonoBehaviour
             GetComponent<TrailRenderer>().enabled = true;
             other.gameObject.GetComponent<AudioSource>().Play();
             isDash = true;
+            wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
             anim.SetBool("isBoosting", true);
             Invoke("LowerSpeed", 0.1f);
         }
