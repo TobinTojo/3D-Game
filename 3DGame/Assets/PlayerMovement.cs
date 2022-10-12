@@ -29,14 +29,14 @@ public class PlayerMovement : MonoBehaviour
     public static bool isRailGrinding = false;
     float horizontalInput;
     float verticalInput;
-    public int rail = 0;
-    public static bool rail1 = false;
-    public static bool rail2 = false;
+    public static float ydirection;
     [SerializeField] GameObject shield;
+    public float xaxis;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        //transform.position = new Vector3(0f, 0.55f, -1.7f);
     }
 
     // Update is called once per frame
@@ -44,10 +44,16 @@ public class PlayerMovement : MonoBehaviour
     {
         TimeSpan time = TimeSpan.FromSeconds(timer.currentTime);
         rightTime.text = time.ToString(@"mm\:ss");
+        if (PlayerMovement.isRailGrinding == true)
+        {
+             transform.position = new Vector3(xaxis, transform.position.y,transform.position.z);
+        }
         if (Input.GetKey("escape"))
         {
             SceneManager.LoadScene("SampleScene");
         }
+        if (movementSpeed == 6f)
+            anim.SetBool("isBoosting", true);
         if (isDash) {
               transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
         }
@@ -59,10 +65,13 @@ public class PlayerMovement : MonoBehaviour
         if (Vector3.Distance(transform.position, wayPoint.transform.position) < 0.1f)
         {
             isDash = false;
+            rb.isKinematic = false;
         }    
         coinCount.text = coins.ToString();
         if (transform.position.y < -15f) {
             transform.position = new Vector3(0f, 0.55f, -1.7f);
+            HealthManager.health = 1;
+            shield.SetActive(false);
         }
         if (!isRailGrinding)
         {
@@ -74,23 +83,43 @@ public class PlayerMovement : MonoBehaviour
         {
              movement = new Vector3(0f, 0, 0f).normalized;
         }
-        
+        if (isDash) {
+            transform.eulerAngles = new Vector3(0f, ydirection, 0f);
+        }
         if (isRailGrinding)
             rb.AddForce(Vector3.forward * 60);
+        if (!isDash)
+        {
+            if (movementSpeed == 4f){
+                GetComponent<TrailRenderer>().enabled = false;
+                anim.SetBool("isBoosting", false);
+            }
+        }
         if (movement != Vector3.zero) {
             Quaternion targetRotation = Quaternion.LookRotation(movement, Vector3.up);
             if (!isRailGrinding)
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.deltaTime);
+                if (isDash)
+                    transform.eulerAngles = new Vector3(0f, ydirection, 0f);
+                else
+                {
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 * Time.deltaTime);
+                }
             else
+            {
                 transform.eulerAngles = new Vector3(0f, 0f, 0f);
+            }
             anim.SetBool("isRunning", true);
         }
         else {
-            anim.SetBool("isRunning", false);
-            movementSpeed = 4f;
-            anim.SetBool("isBoosting", false);
-            if (!isDash)
-                GetComponent<TrailRenderer>().enabled = false;
+            if (Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
+                movementSpeed = 4f;
+            if (isDash) {
+                anim.SetBool("isRunning", true);
+            }
+            else
+            {
+                anim.SetBool("isRunning", false);
+            }
         }
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
         if (Input.GetButtonDown("Jump"))
@@ -98,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
             jumpButtonPressedTime = Time.time;
         }
         if (Time.time - lastGroundedTime <= jumpButtonGracePeriod) {
-            if (Time.time - jumpButtonPressedTime <= jumpButtonGracePeriod && !isJump)
+            if (Time.time - jumpButtonPressedTime <= jumpButtonGracePeriod && !isJump && !isDash)
             {
                 Jumping();
                 source.clip = jump;
@@ -139,12 +168,7 @@ public class PlayerMovement : MonoBehaviour
     if (other.gameObject.tag.Equals("rail") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
     {
         isRailGrinding = true;
-        char rails = other.gameObject.name[other.gameObject.name.Length - 1];
-        rail = Convert.ToInt32(rails);
-        if (rail == 49)
-            rail1 = true;
-        else if (rail == 50)
-            rail2 = true;
+        xaxis = other.gameObject.GetComponent<rail>().xaxis;
         anim.SetBool("isRail", true);
     }
    }
@@ -181,9 +205,17 @@ public class PlayerMovement : MonoBehaviour
             GetComponent<TrailRenderer>().enabled = true;
             other.gameObject.GetComponent<AudioSource>().Play();
             isDash = true;
+            ydirection = other.gameObject.GetComponent<dashPanel>().ydirection;
             wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
             anim.SetBool("isBoosting", true);
             Invoke("LowerSpeed", 0.1f);
+        }
+        if (other.gameObject.tag.Equals("DashRing") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
+        {
+            ydirection = other.gameObject.GetComponent<dashPanel>().ydirection;
+            wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
+            isDash = true;
+            rb.isKinematic = true;
         }
         if (other.gameObject.tag.Equals("coin")) {
             coins++;
@@ -200,17 +232,8 @@ public class PlayerMovement : MonoBehaviour
 	    }
         if (other.gameObject.tag.Equals("rail"))
         {
-            if (rail == 49)
-                rail1 = false;
-            else if (rail == 50)
-                rail2 = false;
-            if (rail1 == false && rail2 == false)
-            {
-                isRailGrinding = false;
-                anim.SetBool("isRail", false);
-                rail = 0;
-            }
-                
+            isRailGrinding = false;
+            anim.SetBool("isRail", false);      
         }
    }
 }

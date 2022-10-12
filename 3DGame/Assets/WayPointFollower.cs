@@ -11,7 +11,6 @@ public class WayPointFollower : MonoBehaviour
     [SerializeField] Transform player;
     public float distance;
     private bool isPatrol = true;
-    [SerializeField] Transform mainBody;
     // Start is called before the first frame update
     void Start()
     {
@@ -41,7 +40,7 @@ public class WayPointFollower : MonoBehaviour
                 }
             }
              transform.position = Vector3.MoveTowards(transform.position, wayPoints[currentWayPointIndex].transform.position, speed * Time.deltaTime);
-        }    
+        }   
         if (distance <= 2.7f && this.gameObject.layer == 9) {
             isPatrol = false;
             transform.LookAt(direction);

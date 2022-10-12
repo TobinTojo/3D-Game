@@ -15,6 +15,7 @@ TagManager:
   - rail
   - FlyEnemy
   - Item
+  - DashRing
   layers:
   - Default
   - TransparentFX

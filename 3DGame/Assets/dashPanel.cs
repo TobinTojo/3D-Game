@@ -5,6 +5,7 @@ using UnityEngine;
 public class dashPanel : MonoBehaviour
 {
     public Transform wayPoint;
+    public float ydirection;
     // Start is called before the first frame update
     void Start()
     {
