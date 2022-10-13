@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class mainMenu : MonoBehaviour
 {
+    public GameObject menu;
+    public GameObject characterSelect;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,7 +20,8 @@ public class mainMenu : MonoBehaviour
 
     public void Play()
     {
-        SceneManager.LoadScene("SampleScene");
+        menu.SetActive(false);
+        characterSelect.SetActive(true);
     }
     public void Quit()
     {

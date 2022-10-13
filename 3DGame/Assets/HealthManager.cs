@@ -5,12 +5,26 @@ using UnityEngine.SceneManagement;
 public class HealthManager : MonoBehaviour
 {
     [SerializeField] GameObject Sonic;
+    [SerializeField] GameObject Modern;
+    [SerializeField] GameObject Classic;
     public static int health;
     [SerializeField] GameObject shield;
     // Start is called before the first frame update
     void Start()
     {
         health = 1;
+        if (SaveCharacter.Character == 1)
+        {
+            Sonic = Modern;
+            Classic.SetActive(false);
+            Modern.SetActive(true);
+        }
+        else
+        {
+            Sonic = Classic;
+            Classic.SetActive(true);
+            Modern.SetActive(false);
+        }
     }
 
     // Update is called once per frame

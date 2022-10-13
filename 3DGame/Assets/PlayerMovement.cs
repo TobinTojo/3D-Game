@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Transform groundCheck;
     [SerializeField] LayerMask ground;
     [SerializeField] Animator anim;
+    [SerializeField] Animator modern;
+    [SerializeField] Animator classic;
     Rigidbody rb;
     [SerializeField] AudioSource source;
     [SerializeField] AudioSource enemsource;
@@ -32,10 +34,16 @@ public class PlayerMovement : MonoBehaviour
     public static float ydirection;
     [SerializeField] GameObject shield;
     public float xaxis;
+    public AudioSource modernSonic;
+    public AudioClip ModernJump;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (SaveCharacter.Character == 1)
+            anim = modern;
+        else
+            anim = classic;
         //transform.position = new Vector3(0f, 0.55f, -1.7f);
     }
 
@@ -130,8 +138,15 @@ public class PlayerMovement : MonoBehaviour
             if (Time.time - jumpButtonPressedTime <= jumpButtonGracePeriod && !isJump && !isDash)
             {
                 Jumping();
-                source.clip = jump;
-                source.Play();
+                if (SaveCharacter.Character == 2)
+                {
+                    source.clip = jump;
+                    source.Play();
+                }
+                else  {
+                    modernSonic.clip = ModernJump;
+                    modernSonic.Play();
+                }
                 jumpButtonPressedTime = null;
                 lastGroundedTime = null;
             }
@@ -208,6 +223,7 @@ public class PlayerMovement : MonoBehaviour
             ydirection = other.gameObject.GetComponent<dashPanel>().ydirection;
             wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
             anim.SetBool("isBoosting", true);
+            rb.isKinematic = true;
             Invoke("LowerSpeed", 0.1f);
         }
         if (other.gameObject.tag.Equals("DashRing") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
