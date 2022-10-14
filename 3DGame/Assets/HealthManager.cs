@@ -9,6 +9,15 @@ public class HealthManager : MonoBehaviour
     [SerializeField] GameObject Classic;
     public static int health;
     [SerializeField] GameObject shield;
+    public AudioClip Hurt1;
+    public AudioClip Hurt2;
+    public AudioClip coinHurt;
+    public AudioClip coinDeath;
+    public AudioSource source;
+    public AudioSource coinSource;
+    [SerializeField] GameObject OrangeRing;
+    public static int myCoin;
+    bool isInvincible = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,13 +44,56 @@ public class HealthManager : MonoBehaviour
 
     void OnTriggerEnter(Collider other) {
      if (other.gameObject.tag.Equals ("Enemy")) {
-        health -= 1;
+        if (!isInvincible)
+            health -= 1;
         if (health == 0)
         {
-               Sonic.SetActive(false);
-               GetComponent<PlayerMovement>().enabled = false;
-               GetComponent<Rigidbody>().isKinematic = true;
-               Invoke("Respawn", 1f);
+            if (PlayerMovement.coins / 4 == 0)
+            {
+                if (PlayerMovement.coins == 0)
+                {
+                    Sonic.SetActive(false);
+                    if (SaveCharacter.Character == 1)
+                    {
+                        source.clip = Hurt2;
+                        source.Play();
+                    }
+                    coinSource.clip = coinDeath;
+                    coinSource.Play();
+                    GetComponent<PlayerMovement>().enabled = false;
+                    GetComponent<Rigidbody>().isKinematic = true;
+                    PlayerMovement.coins = 0;
+                    Invoke("ReloadLevel", 1f);
+                }
+                else
+                {
+                    health = 1;
+                    if (SaveCharacter.Character == 1)
+                    {
+                        source.clip = Hurt1;
+                        source.Play();
+                    }
+                    coinSource.clip = coinHurt;
+                    coinSource.Play();
+                    PlayerMovement.coins = 0;
+                    StartCoroutine("Invincible");
+                }
+            }
+            else
+            {
+                myCoin = PlayerMovement.coins /= 4;
+                PlayerMovement.coins = 0;
+                if (SaveCharacter.Character == 1)
+                {
+                    source.clip = Hurt1;
+                    source.Play();
+                }
+                coinSource.clip = coinHurt;
+                coinSource.Play();
+                health = 1;
+                GameObject orangeCoin = Instantiate(OrangeRing, transform.position, Quaternion.identity);
+                StartCoroutine("Invincible");
+            }
         }
         else
         {
@@ -57,7 +109,23 @@ public class HealthManager : MonoBehaviour
         GetComponent<Rigidbody>().isKinematic = false;
    }
 
-   void ReloadLevel() {
+   public void ReloadLevel() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+   }
+   IEnumerator Invincible()
+   {
+        isInvincible = true;
+        Sonic.SetActive(false);
+        yield return new WaitForSeconds(0.2f);
+        Sonic.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        Sonic.SetActive(false);
+        yield return new WaitForSeconds(0.2f);
+        Sonic.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        Sonic.SetActive(false);
+        yield return new WaitForSeconds(0.2f);
+        Sonic.SetActive(true);
+        isInvincible = false;
    }
 }

@@ -16,6 +16,7 @@ TagManager:
   - FlyEnemy
   - Item
   - DashRing
+  - Orange
   layers:
   - Default
   - TransparentFX

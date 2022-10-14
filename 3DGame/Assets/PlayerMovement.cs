@@ -36,6 +36,13 @@ public class PlayerMovement : MonoBehaviour
     public float xaxis;
     public AudioSource modernSonic;
     public AudioClip ModernJump;
+    public AudioClip ModernWoo;
+    public AudioClip ModernFeelingGood;
+    public AudioClip coinDeath;
+    int counter = 0;
+    public AudioClip ModernDeath;
+    public AudioClip attack;
+    public HealthManager HM;
     // Start is called before the first frame update
     void Start()
     {
@@ -44,7 +51,7 @@ public class PlayerMovement : MonoBehaviour
             anim = modern;
         else
             anim = classic;
-        //transform.position = new Vector3(0f, 0.55f, -1.7f);
+        transform.position = new Vector3(0f, 0.55f, -1.7f);
     }
 
     // Update is called once per frame
@@ -76,10 +83,16 @@ public class PlayerMovement : MonoBehaviour
             rb.isKinematic = false;
         }    
         coinCount.text = coins.ToString();
-        if (transform.position.y < -15f) {
-            transform.position = new Vector3(0f, 0.55f, -1.7f);
-            HealthManager.health = 1;
-            shield.SetActive(false);
+        if (transform.position.y < -10f) {
+            counter++;
+            if (counter == 1)
+            {
+                modernSonic.clip = ModernDeath;
+                modernSonic.Play();
+                source.clip = coinDeath;
+                source.Play();
+                Invoke("SonicDeath", 1f);
+            }
         }
         if (!isRailGrinding)
         {
@@ -184,6 +197,10 @@ public class PlayerMovement : MonoBehaviour
     {
         isRailGrinding = true;
         xaxis = other.gameObject.GetComponent<rail>().xaxis;
+        if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = ModernFeelingGood;
+                modernSonic.Play();
+        }
         anim.SetBool("isRail", true);
     }
    }
@@ -195,6 +212,10 @@ public class PlayerMovement : MonoBehaviour
             Destroy(other.gameObject);
             Destroy(other.transform.parent.gameObject);
             Jumping();
+            if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = attack;
+                modernSonic.Play();
+            }
         }
         if (other.gameObject.tag.Equals ("Item") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
             enemsource.clip = bounce;
@@ -213,6 +234,10 @@ public class PlayerMovement : MonoBehaviour
             enemsource.clip = bounce;
             enemsource.Play();
             Destroy(other.gameObject);
+            if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = attack;
+                modernSonic.Play();
+            }
             Jumping();
         }
         if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
@@ -225,6 +250,10 @@ public class PlayerMovement : MonoBehaviour
             anim.SetBool("isBoosting", true);
             rb.isKinematic = true;
             Invoke("LowerSpeed", 0.1f);
+            if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = ModernWoo;
+                modernSonic.Play();
+            }
         }
         if (other.gameObject.tag.Equals("DashRing") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
         {
@@ -235,6 +264,9 @@ public class PlayerMovement : MonoBehaviour
         }
         if (other.gameObject.tag.Equals("coin")) {
             coins++;
+        }
+        if (other.gameObject.tag.Equals("Orange")) {
+            coins = HealthManager.myCoin;
         }
    }
    void LowerSpeed() {
@@ -251,5 +283,11 @@ public class PlayerMovement : MonoBehaviour
             isRailGrinding = false;
             anim.SetBool("isRail", false);      
         }
+   }
+   void SonicDeath()
+   {
+        coins = 0;
+        counter = 0;
+        HM.ReloadLevel();
    }
 }
