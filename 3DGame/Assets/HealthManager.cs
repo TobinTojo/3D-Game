@@ -43,7 +43,7 @@ public class HealthManager : MonoBehaviour
     }
 
     void OnTriggerEnter(Collider other) {
-     if (other.gameObject.tag.Equals ("Enemy")) {
+     if (other.gameObject.tag.Equals ("Enemy") && GameObject.Find("Player").GetComponent<PlayerMovement>().isHoming == false) {
         if (!isInvincible)
             health -= 1;
         if (health == 0)

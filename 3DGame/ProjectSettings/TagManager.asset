@@ -17,6 +17,7 @@ TagManager:
   - Item
   - DashRing
   - Orange
+  - enemyDetection
   layers:
   - Default
   - TransparentFX

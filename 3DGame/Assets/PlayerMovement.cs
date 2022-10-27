@@ -43,6 +43,10 @@ public class PlayerMovement : MonoBehaviour
     public AudioClip ModernDeath;
     public AudioClip attack;
     public HealthManager HM;
+    public GameObject[] enemies;
+    public GameObject closestEnemy;
+    public int minimumDistance = 0; 
+    public bool isHoming = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -57,6 +61,31 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            if (isHoming == false)
+            {
+                if (enemies[i] != null && closestEnemy != null)
+                {
+                    if (enemies[i].GetComponent<Enemy>().angle > closestEnemy.GetComponent<Enemy>().angle)
+                    {
+                        if (enemies[i].GetComponent<Enemy>().isTouching)
+                        {
+                            minimumDistance = i;
+                            closestEnemy = enemies[i];
+                        }
+                    }
+                }
+                if (closestEnemy == null)
+                {
+                    if (enemies[i] != null)
+                    {
+                        minimumDistance = i;
+                        closestEnemy = enemies[i];
+                    }
+                }
+            }
+        }
         TimeSpan time = TimeSpan.FromSeconds(timer.currentTime);
         rightTime.text = time.ToString(@"mm\:ss");
         if (PlayerMovement.isRailGrinding == true)
@@ -142,10 +171,27 @@ public class PlayerMovement : MonoBehaviour
                 anim.SetBool("isRunning", false);
             }
         }
+        if (isHoming == true)
+        {
+             transform.position = Vector3.MoveTowards(transform.position, closestEnemy.transform.position, 10f * Time.deltaTime);
+        }
+        if (Vector3.Distance(transform.position, closestEnemy.transform.position) <= 0f)
+        {
+            rb.isKinematic = false;
+            isHoming = false;
+        }
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
         if (Input.GetButtonDown("Jump"))
         {
             jumpButtonPressedTime = Time.time;
+        }
+        if (Input.GetButtonDown("Jump") && isHoming == false && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && SaveCharacter.Character == 1)
+        {
+            if (closestEnemy.GetComponent<Enemy>().isTouching)
+            {
+                rb.isKinematic = true;
+                isHoming = true;
+            }
         }
         if (Time.time - lastGroundedTime <= jumpButtonGracePeriod) {
             if (Time.time - jumpButtonPressedTime <= jumpButtonGracePeriod && !isJump && !isDash)
@@ -174,7 +220,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else {
             anim.SetBool("isJumping", true);
-            
         }
         
     }
@@ -209,6 +254,21 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag.Equals ("EnemyHead") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
             enemsource.clip = bounce;
             enemsource.Play();
+            rb.isKinematic = false;
+            isHoming = false;
+            Destroy(other.gameObject);
+            Destroy(other.transform.parent.gameObject);
+            Jumping();
+            if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = attack;
+                modernSonic.Play();
+            }
+        }
+        if (other.gameObject.tag.Equals ("Enemy") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && isHoming) {
+            enemsource.clip = bounce;
+            enemsource.Play();
+            rb.isKinematic = false;
+            isHoming = false;
             Destroy(other.gameObject);
             Destroy(other.transform.parent.gameObject);
             Jumping();
@@ -226,19 +286,21 @@ public class PlayerMovement : MonoBehaviour
             Destroy(other.transform.parent.gameObject);
             Jumping();
         }
-        if (other.gameObject.tag.Equals("Spring") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
+        if (other.gameObject.tag.Equals("Spring"))
         {
             springJumping();
         }
         if (other.gameObject.tag.Equals ("FlyEnemy") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
             enemsource.clip = bounce;
             enemsource.Play();
+            rb.isKinematic = false;
+            isHoming = false;
             Destroy(other.gameObject);
             if (SaveCharacter.Character == 1)  {
                 modernSonic.clip = attack;
                 modernSonic.Play();
             }
-            Jumping();
+            springJumping();
         }
         if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
         {
@@ -289,5 +351,17 @@ public class PlayerMovement : MonoBehaviour
         coins = 0;
         counter = 0;
         HM.ReloadLevel();
+   }
+
+   private void OnApplicationFocus(bool focus)
+   {
+        if (focus)
+        {
+            //Cursor.lockState = CursorLockMode.Locked;
+        }
+        else 
+        {
+            //Cursor.lockState = CursorLockMode.None;
+        }
    }
 }
