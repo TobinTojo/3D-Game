@@ -8,6 +8,7 @@ public class Enemy : MonoBehaviour
     public float distance;
     public Transform player;
     public bool isTouching;
+    public GameObject crossHair;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,9 +20,18 @@ public class Enemy : MonoBehaviour
     {
        distance = (transform.position - player.position).magnitude;
        if (distance <= 4)
-        isTouching = true;
+       {
+            isTouching = true;
+            if (GameObject.Find("Player").GetComponent<PlayerMovement>().canHomingAttack == true && GameObject.Find("Player").GetComponent<PlayerMovement>().closestEnemy == this.gameObject)
+                crossHair.SetActive(true);
+            else
+                crossHair.SetActive(false);
+       }
        else 
-        isTouching = false;
+       {
+            isTouching = false;
+            crossHair.SetActive(false);
+       }
        Vector3 enemyDir = (player.position - transform.position).normalized;
        angle = Vector3.Angle(player.forward, enemyDir);
     }

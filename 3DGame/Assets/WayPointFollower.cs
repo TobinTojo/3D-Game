@@ -22,6 +22,14 @@ public class WayPointFollower : MonoBehaviour
     {
         Vector3 direction = new Vector3(player.position.x, transform.position.y, player.position.z);
         distance = (transform.position - player.position).magnitude;
+        if (GameObject.Find("Player").GetComponent<PlayerMovement>().isHoming == true)
+        {
+            this.gameObject.tag = "EnemyHead";
+        }
+        else 
+        {
+            this.gameObject.tag = "Enemy";
+        }
         if (isPatrol == true) {
             if (Vector3.Distance(transform.position, wayPoints[currentWayPointIndex].transform.position) < 0.1f)
             {

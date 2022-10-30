@@ -47,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
     public GameObject closestEnemy;
     public int minimumDistance = 0; 
     public bool isHoming = false;
+    public bool canHomingAttack;
     // Start is called before the first frame update
     void Start()
     {
@@ -178,12 +179,24 @@ public class PlayerMovement : MonoBehaviour
         if (Vector3.Distance(transform.position, closestEnemy.transform.position) <= 0f)
         {
             rb.isKinematic = false;
+            Destroy(closestEnemy);
             isHoming = false;
+            enemsource.clip = bounce;
+            enemsource.Play();
+            Jumping();
         }
         rb.velocity = new Vector3(horizontalInput * movementSpeed, rb.velocity.y, verticalInput * movementSpeed);
         if (Input.GetButtonDown("Jump"))
         {
             jumpButtonPressedTime = Time.time;
+        }
+        if (isHoming == false && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && SaveCharacter.Character == 1)
+        {
+            canHomingAttack = true;
+        }
+        else 
+        {
+            canHomingAttack = false;
         }
         if (Input.GetButtonDown("Jump") && isHoming == false && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && SaveCharacter.Character == 1)
         {
@@ -191,6 +204,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.isKinematic = true;
                 isHoming = true;
+                if (SaveCharacter.Character == 1)  {
+                    modernSonic.clip = attack;
+                    modernSonic.Play();
+                }
             }
         }
         if (Time.time - lastGroundedTime <= jumpButtonGracePeriod) {
@@ -259,10 +276,6 @@ public class PlayerMovement : MonoBehaviour
             Destroy(other.gameObject);
             Destroy(other.transform.parent.gameObject);
             Jumping();
-            if (SaveCharacter.Character == 1)  {
-                modernSonic.clip = attack;
-                modernSonic.Play();
-            }
         }
         if (other.gameObject.tag.Equals ("Enemy") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && isHoming) {
             enemsource.clip = bounce;
@@ -272,10 +285,6 @@ public class PlayerMovement : MonoBehaviour
             Destroy(other.gameObject);
             Destroy(other.transform.parent.gameObject);
             Jumping();
-            if (SaveCharacter.Character == 1)  {
-                modernSonic.clip = attack;
-                modernSonic.Play();
-            }
         }
         if (other.gameObject.tag.Equals ("Item") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false) {
             enemsource.clip = bounce;
@@ -296,10 +305,6 @@ public class PlayerMovement : MonoBehaviour
             rb.isKinematic = false;
             isHoming = false;
             Destroy(other.gameObject);
-            if (SaveCharacter.Character == 1)  {
-                modernSonic.clip = attack;
-                modernSonic.Play();
-            }
             springJumping();
         }
         if (other.gameObject.tag.Equals("speedPanel") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
