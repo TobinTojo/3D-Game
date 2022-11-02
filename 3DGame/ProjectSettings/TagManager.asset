@@ -18,6 +18,8 @@ TagManager:
   - DashRing
   - Orange
   - enemyDetection
+  - grass
+  - jumpPanel
   layers:
   - Default
   - TransparentFX

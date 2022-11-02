@@ -48,6 +48,16 @@ public class PlayerMovement : MonoBehaviour
     public int minimumDistance = 0; 
     public bool isHoming = false;
     public bool canHomingAttack;
+    [SerializeField] GameObject tileFootstep;
+    [SerializeField] GameObject grassFootstep;
+    [SerializeField] GameObject tileFootstepDash;
+    [SerializeField] GameObject grassFootstepDash;
+    bool isOnMovingPlatform = false;
+    bool isOnGrass = false;
+    bool isAirDash = false;
+    public bool onGroundAfterDash = true;
+    [SerializeField] AudioSource airDash;
+    bool isJumpMotion = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -62,13 +72,20 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isAirDash)
+        {
+            GetComponent<TrailRenderer>().enabled = true;
+            transform.position += transform.forward * Time.deltaTime * 4f;
+            transform.position += transform.forward * Time.deltaTime * 4f;
+        }   
+            
         for (int i = 0; i < enemies.Length; i++)
         {
             if (isHoming == false)
             {
                 if (enemies[i] != null && closestEnemy != null)
                 {
-                    if (enemies[i].GetComponent<Enemy>().angle > closestEnemy.GetComponent<Enemy>().angle)
+                    if (enemies[i].GetComponent<Enemy>().distance < closestEnemy.GetComponent<Enemy>().distance)
                     {
                         if (enemies[i].GetComponent<Enemy>().isTouching)
                         {
@@ -104,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-             if (movementSpeed == 4f)
+             if (movementSpeed == 4f && isAirDash == false)
                 GetComponent<TrailRenderer>().enabled = false;
         }
         if (Vector3.Distance(transform.position, wayPoint.transform.position) < 0.1f)
@@ -129,6 +146,40 @@ public class PlayerMovement : MonoBehaviour
             horizontalInput = Input.GetAxis("Horizontal");
             verticalInput = Input.GetAxis("Vertical");
             movement = new Vector3(horizontalInput, 0, verticalInput).normalized;
+            if (horizontalInput != 0 || verticalInput != 0)
+            {
+                if (isOnMovingPlatform)
+                {
+                    if (!isDash)
+                        tileFootstep.SetActive(true);
+                    else
+                        tileFootstepDash.SetActive(true);
+                }
+                else
+                {
+                    tileFootstep.SetActive(false);
+                    tileFootstepDash.SetActive(false);
+                }
+                if (isOnGrass)
+                {
+                    if (!isDash)
+                        grassFootstep.SetActive(true);
+                    else
+                        grassFootstepDash.SetActive(true);
+                }
+                else
+                {
+                    grassFootstep.SetActive(false);
+                    grassFootstepDash.SetActive(false);
+                }
+            }
+            else
+            {
+                tileFootstep.SetActive(false);
+                tileFootstepDash.SetActive(false);
+                grassFootstep.SetActive(false);
+                grassFootstepDash.SetActive(false);
+            }
         }
         else 
         {
@@ -142,7 +193,8 @@ public class PlayerMovement : MonoBehaviour
         if (!isDash)
         {
             if (movementSpeed == 4f){
-                GetComponent<TrailRenderer>().enabled = false;
+                if (!isAirDash)
+                    GetComponent<TrailRenderer>().enabled = false;
                 anim.SetBool("isBoosting", false);
             }
         }
@@ -200,13 +252,21 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetButtonDown("Jump") && isHoming == false && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false && SaveCharacter.Character == 1)
         {
-            if (closestEnemy.GetComponent<Enemy>().isTouching)
+            if (closestEnemy.GetComponent<Enemy>().isTouching && closestEnemy.GetComponent<Enemy>().angle > 75f && onGroundAfterDash == true)
             {
                 rb.isKinematic = true;
                 isHoming = true;
                 if (SaveCharacter.Character == 1)  {
                     modernSonic.clip = attack;
                     modernSonic.Play();
+                }
+            }
+            else
+            {
+                if (isJumpMotion && onGroundAfterDash)
+                {
+                    onGroundAfterDash = false;
+                    StartCoroutine("dash");
                 }
             }
         }
@@ -234,6 +294,9 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true) {
             anim.SetBool("isJumping", false);
             lastGroundedTime = Time.time;
+            onGroundAfterDash = true;
+            if (isJump == false)
+                isJumpMotion = false;
         }
         else {
             anim.SetBool("isJumping", true);
@@ -241,6 +304,7 @@ public class PlayerMovement : MonoBehaviour
         
     }
    void Jumping() {
+        isJumpMotion = true;
         rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
         anim.SetBool("isJumping", true);
         isJump = true;
@@ -254,6 +318,11 @@ public class PlayerMovement : MonoBehaviour
     if (other.gameObject.tag.Equals ("MovingPlatform") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
 	{
 		this.transform.parent = other.transform;
+        isOnMovingPlatform = true;
+	}
+    if (other.gameObject.tag.Equals ("grass") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
+	{
+        isOnGrass = true;
 	}
     if (other.gameObject.tag.Equals("rail") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
     {
@@ -322,10 +391,26 @@ public class PlayerMovement : MonoBehaviour
                 modernSonic.Play();
             }
         }
+        if (other.gameObject.tag.Equals("jumpPanel"))
+        {
+            GetComponent<TrailRenderer>().enabled = true;
+            other.gameObject.GetComponent<AudioSource>().Play();
+            isDash = true;
+            ydirection = other.gameObject.GetComponent<dashPanel>().ydirection;
+            wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
+            anim.SetBool("isBoosting", true);
+            rb.isKinematic = true;
+            Invoke("LowerSpeed", 0.1f);
+            if (SaveCharacter.Character == 1)  {
+                modernSonic.clip = ModernWoo;
+                modernSonic.Play();
+            }
+        }
         if (other.gameObject.tag.Equals("DashRing") && Physics.CheckSphere(groundCheck.position, 0.1f, ground) == false)
         {
             ydirection = other.gameObject.GetComponent<dashPanel>().ydirection;
             wayPoint = other.gameObject.GetComponent<dashPanel>().wayPoint;
+            other.gameObject.GetComponent<AudioSource>().Play();
             isDash = true;
             rb.isKinematic = true;
         }
@@ -344,6 +429,11 @@ public class PlayerMovement : MonoBehaviour
 	    if (other.gameObject.tag.Equals ("MovingPlatform"))
 	    {
 		    this.transform.parent = null;
+            isOnMovingPlatform = false;
+	    }
+        if (other.gameObject.tag.Equals ("grass"))
+	    {
+            isOnGrass = false;
 	    }
         if (other.gameObject.tag.Equals("rail"))
         {
@@ -357,7 +447,15 @@ public class PlayerMovement : MonoBehaviour
         counter = 0;
         HM.ReloadLevel();
    }
-
+   IEnumerator dash()
+   {
+        rb.isKinematic = true;
+        isAirDash = true;
+        airDash.Play();
+        yield return new WaitForSeconds(0.25f);
+        rb.isKinematic = false;
+        isAirDash = false;
+   }
    private void OnApplicationFocus(bool focus)
    {
         if (focus)
