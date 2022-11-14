@@ -57,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
     bool isAirDash = false;
     public bool onGroundAfterDash = true;
     [SerializeField] AudioSource airDash;
+    float lastSpeed = 3.5f;
     bool isJumpMotion = false;
     // Start is called before the first frame update
     void Start()
@@ -114,14 +115,16 @@ public class PlayerMovement : MonoBehaviour
         {
             SceneManager.LoadScene("SampleScene");
         }
-        if (movementSpeed == 6f)
+        if (movementSpeed == 6f && !isRailGrinding)
             anim.SetBool("isBoosting", true);
+        if (isRailGrinding)
+            anim.SetBool("isBoosting", false);
         if (isDash) {
               transform.position = Vector3.MoveTowards(transform.position, wayPoint.transform.position, 14f * Time.deltaTime);
         }
         else
         {
-             if (movementSpeed == 4f && isAirDash == false)
+             if (movementSpeed <= 4.3f && isAirDash == false)
                 GetComponent<TrailRenderer>().enabled = false;
         }
         if (Vector3.Distance(transform.position, wayPoint.transform.position) < 0.1f)
@@ -148,6 +151,15 @@ public class PlayerMovement : MonoBehaviour
             movement = new Vector3(horizontalInput, 0, verticalInput).normalized;
             if (horizontalInput != 0 || verticalInput != 0)
             {
+                movementSpeed += 0.05f;
+                if (movementSpeed > 4.3f)
+                {
+                    if (movementSpeed >= 6f)
+                        movementSpeed = 6f;
+                    else
+                        movementSpeed = 4.3f;
+                }
+                lastSpeed = movementSpeed;
                 if (isOnMovingPlatform)
                 {
                     if (!isDash)
@@ -183,6 +195,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else 
         {
+             if (lastSpeed < 6f)
+                movementSpeed = lastSpeed;
              movement = new Vector3(0f, 0, 0f).normalized;
         }
         if (isDash) {
@@ -192,7 +206,7 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(Vector3.forward * 60);
         if (!isDash)
         {
-            if (movementSpeed == 4f){
+            if (movementSpeed <= 4.3f){
                 if (!isAirDash)
                     GetComponent<TrailRenderer>().enabled = false;
                 anim.SetBool("isBoosting", false);
@@ -215,7 +229,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else {
             if (Physics.CheckSphere(groundCheck.position, 0.1f, ground) == true)
-                movementSpeed = 4f;
+                movementSpeed = 3.5f;
             if (isDash) {
                 anim.SetBool("isRunning", true);
             }
